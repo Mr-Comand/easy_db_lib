@@ -1,6 +1,6 @@
 from typing import Iterable
-from database.database import Database
-from database.row import Row
+from database import Database
+from row import Row
 class Table:
     def __init__(self, db: Database, createIfNotExists:bool = False, structure:dict = {}, autoPull = False) -> None:
         self.db = db
