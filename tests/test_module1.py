@@ -258,14 +258,14 @@ DELETE FROM status;
 DELETE FROM host;""")
 el = host.table_element(toBeCreated=True)
 el.host = "8.8.8.8"
+
+el2 = page.table_element(toBeCreated=True)
+el2.Host_link = el
+
 el3 = host.table_element(toBeCreated=True)
 el3.host = "1.1.1.1"
-el2 = page.table_element(toBeCreated=True)
-el2.Host = "8.8.8.8"
-el2.delete()
-el.delete()
-print(el)
-el.create()
+
+
 el2.create()
 el3.create()
 print(el)

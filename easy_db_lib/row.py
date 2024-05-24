@@ -25,6 +25,21 @@ class Row(object):
             object.__setattr__(self, name, value)
             return
         try:
+            if name.endswith("_link"):
+                field = name[0:-5]
+                if field in self.links:
+                    if isinstance(value, self.fields[field]["references"]["table"].table_element):
+                        if self.toBeCreated:
+                            object.__setattr__(self, "_"+name+"_", value)
+                            object.__setattr__(self, "_"+field, getattr(value, self.fields[field]["references"]["column"]))
+                            self.changes.add(field)
+                        else:
+                            if value.toBeCreated:
+                                value.create()
+                            object.__setattr__(self, "_"+field, getattr(value, self.fields[field]["references"]["column"]))
+                            self.push([field])
+                    else:
+                        raise TypeError(f"{value} is not a row of {self.fields[field]["references"]["table"]}.")
             if name in self.fields:
                 print("set", name)
                 setattr(self, '_' + name, value)
@@ -88,29 +103,34 @@ class Row(object):
         updated_fields = ', '.join([f"{field}='{getattr(self, '_' + field)}'" for field in fields])
         identifier = " AND ".join([f"{field}='{getattr(self, '_' + field)}'" for field in self.identifierKeys])
         self.db.execute(f"UPDATE {self.tableName} SET {updated_fields} WHERE {identifier}")
-    def create(self) -> int:
+    def create(self) -> None:
         if self.toBeCreated:
             fields = self.changes
-            print(fields)
+            changed_links = list(set(fields).intersection(self.links))
+            for field in changed_links:
+                value = getattr(self, "_"+field+"_link_")
+                object.__setattr__(self, "_"+field, getattr(value, self.fields[field]["references"]["column"]))
+                if value.toBeCreated:
+                    value.create()
             fields_str = ', '.join(fields)
-            values = ', '.join(["%s" for i in fields])
+            values = ', '.join(["%s" for _ in fields])
             
             query = f"INSERT INTO {self.tableName} ({fields_str}) VALUES ({values})"
-
-            if self.identifierKeys is not []:
-                query += f" RETURNING { ', '.join(self.identifierKeys)}"
+            missingIdentifierKeys = [key for key in self.identifierKeys if key not in fields]
+            if len(missingIdentifierKeys)!=0:
+                query += f" RETURNING { ', '.join(missingIdentifierKeys)}"
             params = [getattr(self, field) for field in fields]
-            print(query, params)
+            print(query, params, missingIdentifierKeys)
             
             output = self.db.execute(query, params)
-            if self.identifierKeys is not []:
-                for i, key in enumerate(self.identifierKeys):
+            if len(missingIdentifierKeys)!=0:
+                for i, key in enumerate(missingIdentifierKeys):
                     print(output)
                     setattr(self, key, output[0][i])
             
             self.toBeCreated = False
             del(self.changes)
-            return self.identifierKeys
+            
         else:
             raise TypeError("The Object was not initialized to be created.")
         
