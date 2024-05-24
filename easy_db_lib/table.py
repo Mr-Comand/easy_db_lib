@@ -1,6 +1,5 @@
-from typing import Iterable
-from database import Database
-from row import Row
+from .database import Database
+from .row import Row
 class Table:
     def __init__(self, db: Database, createIfNotExists:bool = False, structure:dict = {}, autoPull = False) -> None:
         self.db = db
@@ -99,7 +98,22 @@ class Table:
     def formattedContent(self, rows=10):
         sql= f"SELECT * FROM {self.tableName};"
         print(self.db.execute(sql))
-
+    def getAllWhere(self, where):
+        if self.primaryKeys:
+            sql= f"SELECT {', '.join(self.primaryKeys)} FROM {self.tableName} WHERE {where};"
+            res = self.db.execute(sql)
+            output = []
+            for i in res:
+                output.append(self.table_element(**{key: value for key, value in zip(self.primaryKeys, i)}))
+            return output
+        else:
+            sql= f"SELECT {', '.join(self.columns.keys())} FROM {self.tableName} WHERE {where};"
+            res = self.db.execute(sql)
+            output = []
+            for i in res:
+                output.append(self.table_element(**{key: value for key, value in zip(self.columns.keys(), i)}))
+            return output
+        return self.db.execute(sql)
 if __name__ == "__main__":
     db = Database()
     table = Row(db,toBeCreated=True,identifierKeys=["timestamp"],fields={"timestamp":{"type":{"sql":"Text","python": type}, "PRIMARY": False, "references": {"table":"table_name", "column":"column_name"}}})

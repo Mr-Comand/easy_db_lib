@@ -1,9 +1,11 @@
+# tests/test_module1.py
 from datetime import datetime
+from .config import *
+from ..easy_db_lib import Database, Table
 
-from easy_db_lib import Database, Table
-
-db = Database(host="", database="", user="", password="")
-
+db = Database(
+        host=DB_HOST, database=DB_DATABASE, user=DB_USER, password=DB_PASSWORD # noqa: F405
+)
 host = Table(db=db, createIfNotExists=True,structure={
         "name": "Host",
         "columns": {
@@ -255,14 +257,17 @@ DELETE FROM links;
 DELETE FROM status;
 DELETE FROM host;""")
 el = host.table_element(toBeCreated=True)
-el.host = "144.92.98.85"
+el.host = "8.8.8.8"
+el3 = host.table_element(toBeCreated=True)
+el3.host = "1.1.1.1"
 el2 = page.table_element(toBeCreated=True)
-el2.Host = "144.92.98.85"
+el2.Host = "8.8.8.8"
 el2.delete()
 el.delete()
 print(el)
 el.create()
 el2.create()
+el3.create()
 print(el)
 el.pull()
 el2.pull()
@@ -275,3 +280,6 @@ print(el2.Host_link)
 print(el)
 el.pull()
 print(el)
+print("------")
+for i in host.getAllWhere("Host ='1.1.1.1'"):
+    print(i)

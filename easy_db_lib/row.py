@@ -1,5 +1,5 @@
 from typing import Iterable
-import Database
+from .database import Database
 
 class Row(object):
     def __init__(self, db: Database, tableName, identifierKeys = None, toBeCreated:bool = False, fields:dict = {}, autoPull=False, **values) -> None:
