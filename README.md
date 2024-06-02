@@ -21,6 +21,15 @@ We welcome contributions from the community! To contribute:
 5. Create a pull request to the main repository.
 
 Please ensure your code adheres to the project's coding standards and includes appropriate tests.
-License
+
+## License
 
 This project is licensed under the MIT License. See the LICENSE file for more details.
+
+## Installation
+
+You can install Easy DB Lib via pip:
+
+```bash
+pip install easy_db_lib
+```
